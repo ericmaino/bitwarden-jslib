@@ -17,8 +17,9 @@ import { CipherString } from '../../models/domain/cipherString';
 import { SymmetricCryptoKey } from '../../models/domain/symmetricCryptoKey';
 
 import { Utils } from '../../misc/utils';
+import { PlatformComponent } from './platform.component';
 
-export class LockComponent implements OnInit {
+export class LockComponent extends PlatformComponent implements OnInit {
     masterPassword: string = '';
     pin: string = '';
     showPassword: boolean = false;
@@ -36,7 +37,9 @@ export class LockComponent implements OnInit {
         protected platformUtilsService: PlatformUtilsService, protected messagingService: MessagingService,
         protected userService: UserService, protected cryptoService: CryptoService,
         protected storageService: StorageService, protected vaultTimeoutService: VaultTimeoutService,
-        protected environmentService: EnvironmentService, protected stateService: StateService) { }
+        protected environmentService: EnvironmentService, protected stateService: StateService) {
+            super(platformUtilsService, i18nService);
+        }
 
     async ngOnInit() {
         this.pinSet = await this.vaultTimeoutService.isPinLockSet();
@@ -51,13 +54,11 @@ export class LockComponent implements OnInit {
 
     async submit() {
         if (this.pinLock && (this.pin == null || this.pin === '')) {
-            this.platformUtilsService.showToast('error', this.i18nService.t('errorOccurred'),
-                this.i18nService.t('pinRequired'));
+            this.raiseError('pinRequired');
             return;
         }
         if (!this.pinLock && (this.masterPassword == null || this.masterPassword === '')) {
-            this.platformUtilsService.showToast('error', this.i18nService.t('errorOccurred'),
-                this.i18nService.t('masterPassRequired'));
+            this.raiseError('masterPassRequired');
             return;
         }
 
@@ -92,8 +93,7 @@ export class LockComponent implements OnInit {
                     this.messagingService.send('logout');
                     return;
                 }
-                this.platformUtilsService.showToast('error', this.i18nService.t('errorOccurred'),
-                    this.i18nService.t('invalidPin'));
+                this.raiseError('invalidPin');
             }
         } else {
             const key = await this.cryptoService.makeKey(this.masterPassword, this.email, kdf, kdfIterations);
@@ -110,8 +110,7 @@ export class LockComponent implements OnInit {
                 }
                 this.setKeyAndContinue(key);
             } else {
-                this.platformUtilsService.showToast('error', this.i18nService.t('errorOccurred'),
-                    this.i18nService.t('invalidMasterPassword'));
+                this.raiseError('invalidMasterPassword');
             }
         }
     }

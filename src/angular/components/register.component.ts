@@ -12,8 +12,9 @@ import { PlatformUtilsService } from '../../abstractions/platformUtils.service';
 import { StateService } from '../../abstractions/state.service';
 
 import { KdfType } from '../../enums/kdfType';
+import { PlatformComponent } from './platform.component';
 
-export class RegisterComponent {
+export class RegisterComponent extends PlatformComponent {
     name: string = '';
     email: string = '';
     masterPassword: string = '';
@@ -30,7 +31,9 @@ export class RegisterComponent {
         protected i18nService: I18nService, protected cryptoService: CryptoService,
         protected apiService: ApiService, protected stateService: StateService,
         protected platformUtilsService: PlatformUtilsService,
-        protected passwordGenerationService: PasswordGenerationService) { }
+        protected passwordGenerationService: PasswordGenerationService) {
+        super(platformUtilsService, i18nService);
+    }
 
     get masterPasswordScoreWidth() {
         return this.masterPasswordScore == null ? 0 : (this.masterPasswordScore + 1) * 20;
@@ -64,28 +67,23 @@ export class RegisterComponent {
 
     async submit() {
         if (this.email == null || this.email === '') {
-            this.platformUtilsService.showToast('error', this.i18nService.t('errorOccurred'),
-                this.i18nService.t('emailRequired'));
+            this.raiseError('emailRequired');
             return;
         }
         if (this.email.indexOf('@') === -1) {
-            this.platformUtilsService.showToast('error', this.i18nService.t('errorOccurred'),
-                this.i18nService.t('invalidEmail'));
+            this.raiseError('invalidEmail');
             return;
         }
         if (this.masterPassword == null || this.masterPassword === '') {
-            this.platformUtilsService.showToast('error', this.i18nService.t('errorOccurred'),
-                this.i18nService.t('masterPassRequired'));
+            this.raiseError('masterPassRequired');
             return;
         }
         if (this.masterPassword.length < 8) {
-            this.platformUtilsService.showToast('error', this.i18nService.t('errorOccurred'),
-                this.i18nService.t('masterPassLength'));
+            this.raiseError('masterPassLength');
             return;
         }
         if (this.masterPassword !== this.confirmMasterPassword) {
-            this.platformUtilsService.showToast('error', this.i18nService.t('errorOccurred'),
-                this.i18nService.t('masterPassDoesntMatch'));
+            this.raiseError('masterPassDoesntMatch');
             return;
         }
 

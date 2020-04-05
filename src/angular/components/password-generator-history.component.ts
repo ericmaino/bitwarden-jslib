@@ -5,13 +5,16 @@ import { PasswordGenerationService } from '../../abstractions/passwordGeneration
 import { PlatformUtilsService } from '../../abstractions/platformUtils.service';
 
 import { GeneratedPasswordHistory } from '../../models/domain/generatedPasswordHistory';
+import { PlatformComponent } from './platform.component';
 
-export class PasswordGeneratorHistoryComponent implements OnInit {
+export class PasswordGeneratorHistoryComponent extends PlatformComponent implements OnInit {
     history: GeneratedPasswordHistory[] = [];
 
     constructor(protected passwordGenerationService: PasswordGenerationService,
         protected platformUtilsService: PlatformUtilsService, protected i18nService: I18nService,
-        private win: Window) { }
+        private win: Window) {
+            super(platformUtilsService, i18nService);
+        }
 
     async ngOnInit() {
         this.history = await this.passwordGenerationService.getHistory();

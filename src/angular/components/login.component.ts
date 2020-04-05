@@ -15,13 +15,14 @@ import { StorageService } from '../../abstractions/storage.service';
 import { ConstantsService } from '../../services/constants.service';
 
 import { Utils } from '../../misc/utils';
+import { PlatformComponent } from './platform.component';
 
 const Keys = {
     rememberedEmail: 'rememberedEmail',
     rememberEmail: 'rememberEmail',
 };
 
-export class LoginComponent implements OnInit {
+export class LoginComponent extends PlatformComponent implements OnInit {
     @Input() email: string = '';
     @Input() rememberEmail = true;
 
@@ -37,7 +38,9 @@ export class LoginComponent implements OnInit {
 
     constructor(protected authService: AuthService, protected router: Router,
         protected platformUtilsService: PlatformUtilsService, protected i18nService: I18nService,
-        private storageService: StorageService, protected stateService: StorageService) { }
+        private storageService: StorageService, protected stateService: StorageService) {
+        super(platformUtilsService, i18nService);
+    }
 
     async ngOnInit() {
         if (this.email == null || this.email === '') {
@@ -57,18 +60,15 @@ export class LoginComponent implements OnInit {
 
     async submit() {
         if (this.email == null || this.email === '') {
-            this.platformUtilsService.showToast('error', this.i18nService.t('errorOccurred'),
-                this.i18nService.t('emailRequired'));
+            this.raiseError('emailRequired');
             return;
         }
         if (this.email.indexOf('@') === -1) {
-            this.platformUtilsService.showToast('error', this.i18nService.t('errorOccurred'),
-                this.i18nService.t('invalidEmail'));
+            this.raiseError('invalidEmail');
             return;
         }
         if (this.masterPassword == null || this.masterPassword === '') {
-            this.platformUtilsService.showToast('error', this.i18nService.t('errorOccurred'),
-                this.i18nService.t('masterPassRequired'));
+            this.raiseError('masterPassRequired');
             return;
         }
 

@@ -14,8 +14,9 @@ import { CipherView } from '../../models/view/cipherView';
 import { CollectionView } from '../../models/view/collectionView';
 
 import { Cipher } from '../../models/domain/cipher';
+import { PlatformComponent } from './platform.component';
 
-export class CollectionsComponent implements OnInit {
+export class CollectionsComponent extends PlatformComponent implements OnInit {
     @Input() cipherId: string;
     @Input() allowSelectNone = false;
     @Output() onSavedCollections = new EventEmitter();
@@ -28,7 +29,9 @@ export class CollectionsComponent implements OnInit {
     protected cipherDomain: Cipher;
 
     constructor(protected collectionService: CollectionService, protected platformUtilsService: PlatformUtilsService,
-        protected i18nService: I18nService, protected cipherService: CipherService) { }
+        protected i18nService: I18nService, protected cipherService: CipherService) {
+            super(platformUtilsService, i18nService);
+        }
 
     async ngOnInit() {
         await this.load();
@@ -53,8 +56,7 @@ export class CollectionsComponent implements OnInit {
             .filter((c) => !!(c as any).checked)
             .map((c) => c.id);
         if (!this.allowSelectNone && selectedCollectionIds.length === 0) {
-            this.platformUtilsService.showToast('error', this.i18nService.t('errorOccurred'),
-                this.i18nService.t('selectOneCollection'));
+            this.raiseError('selectOneCollection');
             return;
         }
         this.cipherDomain.collectionIds = selectedCollectionIds;

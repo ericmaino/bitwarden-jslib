@@ -4,14 +4,17 @@ import { ApiService } from '../../abstractions/api.service';
 import { I18nService } from '../../abstractions/i18n.service';
 import { PlatformUtilsService } from '../../abstractions/platformUtils.service';
 import { TokenService } from '../../abstractions/token.service';
+import { PlatformComponent } from './platform.component';
 
-export class PremiumComponent implements OnInit {
+export class PremiumComponent extends PlatformComponent implements OnInit {
     isPremium: boolean = false;
     price: number = 10;
     refreshPromise: Promise<any>;
 
     constructor(protected i18nService: I18nService, protected platformUtilsService: PlatformUtilsService,
-        protected tokenService: TokenService, protected apiService: ApiService) { }
+        protected tokenService: TokenService, protected apiService: ApiService) {
+        super(platformUtilsService, i18nService);
+    }
 
     async ngOnInit() {
         this.isPremium = this.tokenService.getPremium();

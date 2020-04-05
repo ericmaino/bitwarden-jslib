@@ -40,8 +40,9 @@ import { LoginView } from '../../models/view/loginView';
 import { SecureNoteView } from '../../models/view/secureNoteView';
 
 import { Utils } from '../../misc/utils';
+import { PlatformComponent } from './platform.component';
 
-export class AddEditComponent implements OnInit {
+export class AddEditComponent extends PlatformComponent implements OnInit {
     @Input() cloneMode: boolean = false;
     @Input() folderId: string = null;
     @Input() cipherId: string;
@@ -85,6 +86,7 @@ export class AddEditComponent implements OnInit {
         protected auditService: AuditService, protected stateService: StateService,
         protected userService: UserService, protected collectionService: CollectionService,
         protected messagingService: MessagingService, protected eventService: EventService) {
+        super(platformUtilsService, i18nService);
         this.typeOptions = [
             { name: i18nService.t('typeLogin'), value: CipherType.Login },
             { name: i18nService.t('typeCard'), value: CipherType.Card },
@@ -222,8 +224,7 @@ export class AddEditComponent implements OnInit {
 
     async submit(): Promise<boolean> {
         if (this.cipher.name == null || this.cipher.name === '') {
-            this.platformUtilsService.showToast('error', this.i18nService.t('errorOccurred'),
-                this.i18nService.t('nameRequired'));
+            this.raiseError('nameRequired');
             return false;
         }
 

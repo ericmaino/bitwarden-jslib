@@ -22,8 +22,9 @@ import { ConstantsService } from '../../services/constants.service';
 
 import * as DuoWebSDK from 'duo_web_sdk';
 import { U2f } from '../../misc/u2f';
+import { PlatformComponent } from './platform.component';
 
-export class TwoFactorComponent implements OnInit, OnDestroy {
+export class TwoFactorComponent extends PlatformComponent implements OnInit, OnDestroy {
     token: string = '';
     remember: boolean = false;
     u2fReady: boolean = false;
@@ -48,6 +49,7 @@ export class TwoFactorComponent implements OnInit, OnDestroy {
         protected platformUtilsService: PlatformUtilsService, protected win: Window,
         protected environmentService: EnvironmentService, protected stateService: StateService,
         protected storageService: StorageService) {
+        super(platformUtilsService, i18nService);
         this.u2fSupported = this.platformUtilsService.supportsU2f(win);
     }
 
@@ -70,7 +72,7 @@ export class TwoFactorComponent implements OnInit, OnDestroy {
                 this.token = token;
                 this.submit();
             }, (error: string) => {
-                this.platformUtilsService.showToast('error', this.i18nService.t('errorOccurred'), error);
+                this.raiseError(error);
             }, (info: string) => {
                 if (info === 'ready') {
                     this.u2fReady = true;
@@ -153,8 +155,7 @@ export class TwoFactorComponent implements OnInit, OnDestroy {
 
     async submit() {
         if (this.token == null || this.token === '') {
-            this.platformUtilsService.showToast('error', this.i18nService.t('errorOccurred'),
-                this.i18nService.t('verificationCodeRequired'));
+            this.raiseError('verificationCodeRequired');
             return;
         }
 

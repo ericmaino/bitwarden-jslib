@@ -9,8 +9,9 @@ import { ExportService } from '../../abstractions/export.service';
 import { I18nService } from '../../abstractions/i18n.service';
 import { PlatformUtilsService } from '../../abstractions/platformUtils.service';
 import { EventType } from '../../enums/eventType';
+import { PlatformComponent } from './platform.component';
 
-export class ExportComponent {
+export class ExportComponent extends PlatformComponent {
     @Output() onSaved = new EventEmitter();
 
     formPromise: Promise<string>;
@@ -20,12 +21,13 @@ export class ExportComponent {
 
     constructor(protected cryptoService: CryptoService, protected i18nService: I18nService,
         protected platformUtilsService: PlatformUtilsService, protected exportService: ExportService,
-        protected eventService: EventService, protected win: Window) { }
+        protected eventService: EventService, protected win: Window) {
+        super(platformUtilsService, i18nService);
+    }
 
     async submit() {
         if (this.masterPassword == null || this.masterPassword === '') {
-            this.platformUtilsService.showToast('error', this.i18nService.t('errorOccurred'),
-                this.i18nService.t('invalidMasterPassword'));
+            this.raiseError('invalidMasterPassword');
             return;
         }
 
@@ -41,8 +43,7 @@ export class ExportComponent {
                 await this.collectEvent();
             } catch { }
         } else {
-            this.platformUtilsService.showToast('error', this.i18nService.t('errorOccurred'),
-                this.i18nService.t('invalidMasterPassword'));
+            this.raiseError('invalidMasterPassword');
         }
     }
 

@@ -5,8 +5,9 @@ import { PasswordHintRequest } from '../../models/request/passwordHintRequest';
 import { ApiService } from '../../abstractions/api.service';
 import { I18nService } from '../../abstractions/i18n.service';
 import { PlatformUtilsService } from '../../abstractions/platformUtils.service';
+import { PlatformComponent } from './platform.component';
 
-export class HintComponent {
+export class HintComponent extends PlatformComponent {
     email: string = '';
     formPromise: Promise<any>;
 
@@ -14,17 +15,17 @@ export class HintComponent {
     protected onSuccessfulSubmit: () => void;
 
     constructor(protected router: Router, protected i18nService: I18nService,
-        protected apiService: ApiService, protected platformUtilsService: PlatformUtilsService) { }
+        protected apiService: ApiService, protected platformUtilsService: PlatformUtilsService) {
+        super(platformUtilsService, i18nService);
+    }
 
     async submit() {
         if (this.email == null || this.email === '') {
-            this.platformUtilsService.showToast('error', this.i18nService.t('errorOccurred'),
-                this.i18nService.t('emailRequired'));
+            this.raiseError('emailRequired');
             return;
         }
         if (this.email.indexOf('@') === -1) {
-            this.platformUtilsService.showToast('error', this.i18nService.t('errorOccurred'),
-                this.i18nService.t('invalidEmail'));
+            this.raiseError('invalidEmail');
             return;
         }
 

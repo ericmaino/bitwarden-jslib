@@ -18,8 +18,9 @@ import { CipherView } from '../../models/view/cipherView';
 import { CollectionView } from '../../models/view/collectionView';
 
 import { Utils } from '../../misc/utils';
+import { PlatformComponent } from './platform.component';
 
-export class ShareComponent implements OnInit {
+export class ShareComponent extends PlatformComponent implements OnInit {
     @Input() cipherId: string;
     @Input() organizationId: string;
     @Output() onSharedCipher = new EventEmitter();
@@ -33,7 +34,9 @@ export class ShareComponent implements OnInit {
 
     constructor(protected collectionService: CollectionService, protected platformUtilsService: PlatformUtilsService,
         protected i18nService: I18nService, protected userService: UserService,
-        protected cipherService: CipherService) { }
+        protected cipherService: CipherService) {
+            super(platformUtilsService, i18nService);
+        }
 
     async ngOnInit() {
         await this.load();
@@ -68,8 +71,7 @@ export class ShareComponent implements OnInit {
             .filter((c) => !!(c as any).checked)
             .map((c) => c.id);
         if (selectedCollectionIds.length === 0) {
-            this.platformUtilsService.showToast('error', this.i18nService.t('errorOccurred'),
-                this.i18nService.t('selectOneCollection'));
+            this.raiseError('selectOneCollection');
             return;
         }
 

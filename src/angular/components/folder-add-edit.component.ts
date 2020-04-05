@@ -10,8 +10,9 @@ import { I18nService } from '../../abstractions/i18n.service';
 import { PlatformUtilsService } from '../../abstractions/platformUtils.service';
 
 import { FolderView } from '../../models/view/folderView';
+import { PlatformComponent } from './platform.component';
 
-export class FolderAddEditComponent implements OnInit {
+export class FolderAddEditComponent extends PlatformComponent implements OnInit {
     @Input() folderId: string;
     @Output() onSavedFolder = new EventEmitter<FolderView>();
     @Output() onDeletedFolder = new EventEmitter<FolderView>();
@@ -23,7 +24,9 @@ export class FolderAddEditComponent implements OnInit {
     deletePromise: Promise<any>;
 
     constructor(protected folderService: FolderService, protected i18nService: I18nService,
-        protected platformUtilsService: PlatformUtilsService) { }
+        protected platformUtilsService: PlatformUtilsService) {
+        super(platformUtilsService, i18nService);
+    }
 
     async ngOnInit() {
         await this.init();
@@ -31,8 +34,7 @@ export class FolderAddEditComponent implements OnInit {
 
     async submit(): Promise<boolean> {
         if (this.folder.name == null || this.folder.name === '') {
-            this.platformUtilsService.showToast('error', this.i18nService.t('errorOccurred'),
-                this.i18nService.t('nameRequired'));
+            this.raiseError('nameRequired');
             return false;
         }
 

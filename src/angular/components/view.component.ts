@@ -27,10 +27,11 @@ import { CipherView } from '../../models/view/cipherView';
 import { FieldView } from '../../models/view/fieldView';
 import { LoginUriView } from '../../models/view/loginUriView';
 import { BroadcasterService } from '../services/broadcaster.service';
+import { PlatformComponent } from './platform.component';
 
 const BroadcasterSubscriptionId = 'ViewComponent';
 
-export class ViewComponent implements OnDestroy, OnInit {
+export class ViewComponent extends PlatformComponent implements OnInit, OnDestroy {
     @Input() cipherId: string;
     @Output() onEditCipher = new EventEmitter<CipherView>();
     @Output() onCloneCipher = new EventEmitter<CipherView>();
@@ -56,7 +57,9 @@ export class ViewComponent implements OnDestroy, OnInit {
         protected auditService: AuditService, protected win: Window,
         protected broadcasterService: BroadcasterService, protected ngZone: NgZone,
         protected changeDetectorRef: ChangeDetectorRef, protected userService: UserService,
-        protected eventService: EventService) { }
+        protected eventService: EventService) {
+        super(platformUtilsService, i18nService);
+    }
 
     ngOnInit() {
         this.broadcasterService.subscribe(BroadcasterSubscriptionId, (message: any) => {
@@ -191,15 +194,14 @@ export class ViewComponent implements OnDestroy, OnInit {
         }
 
         if (this.cipher.organizationId == null && !this.canAccessPremium) {
-            this.platformUtilsService.showToast('error', this.i18nService.t('premiumRequired'),
-                this.i18nService.t('premiumRequiredDesc'));
+            this.raisePremiumRequired();
             return;
         }
 
         a.downloading = true;
         const response = await fetch(new Request(attachment.url, { cache: 'no-store' }));
         if (response.status !== 200) {
-            this.platformUtilsService.showToast('error', null, this.i18nService.t('errorOccurred'));
+            this.raiseError();
             a.downloading = false;
             return;
         }
@@ -211,7 +213,7 @@ export class ViewComponent implements OnDestroy, OnInit {
             const decBuf = await this.cryptoService.decryptFromBytes(buf, key);
             this.platformUtilsService.saveFile(this.win, decBuf, null, attachment.fileName);
         } catch (e) {
-            this.platformUtilsService.showToast('error', null, this.i18nService.t('errorOccurred'));
+            this.raiseError();
         }
 
         a.downloading = false;

@@ -15,8 +15,9 @@ import { Cipher } from '../../models/domain/cipher';
 
 import { AttachmentView } from '../../models/view/attachmentView';
 import { CipherView } from '../../models/view/cipherView';
+import { PlatformComponent } from './platform.component';
 
-export class AttachmentsComponent implements OnInit {
+export class AttachmentsComponent extends PlatformComponent implements OnInit {
     @Input() cipherId: string;
     @Output() onUploadedAttachment = new EventEmitter();
     @Output() onDeletedAttachment = new EventEmitter();
@@ -32,7 +33,9 @@ export class AttachmentsComponent implements OnInit {
 
     constructor(protected cipherService: CipherService, protected i18nService: I18nService,
         protected cryptoService: CryptoService, protected userService: UserService,
-        protected platformUtilsService: PlatformUtilsService, protected win: Window) { }
+        protected platformUtilsService: PlatformUtilsService, protected win: Window) {
+        super(platformUtilsService, i18nService);
+    }
 
     async ngOnInit() {
         await this.init();
@@ -40,22 +43,19 @@ export class AttachmentsComponent implements OnInit {
 
     async submit() {
         if (!this.hasUpdatedKey) {
-            this.platformUtilsService.showToast('error', this.i18nService.t('errorOccurred'),
-                this.i18nService.t('updateKey'));
+            this.raiseError('updateKey');
             return;
         }
 
         const fileEl = document.getElementById('file') as HTMLInputElement;
         const files = fileEl.files;
         if (files == null || files.length === 0) {
-            this.platformUtilsService.showToast('error', this.i18nService.t('errorOccurred'),
-                this.i18nService.t('selectFile'));
+            this.raiseError('selectFile');
             return;
         }
 
         if (files[0].size > 104857600) { // 100 MB
-            this.platformUtilsService.showToast('error', this.i18nService.t('errorOccurred'),
-                this.i18nService.t('maxFileSize'));
+            this.raiseError('maxFileSize');
             return;
         }
 
@@ -109,15 +109,14 @@ export class AttachmentsComponent implements OnInit {
         }
 
         if (!this.canAccessAttachments) {
-            this.platformUtilsService.showToast('error', this.i18nService.t('premiumRequired'),
-                this.i18nService.t('premiumRequiredDesc'));
+            this.raisePremiumRequired();
             return;
         }
 
         a.downloading = true;
         const response = await fetch(new Request(attachment.url, { cache: 'no-store' }));
         if (response.status !== 200) {
-            this.platformUtilsService.showToast('error', null, this.i18nService.t('errorOccurred'));
+            this.raiseError();
             a.downloading = false;
             return;
         }
@@ -129,7 +128,7 @@ export class AttachmentsComponent implements OnInit {
             const decBuf = await this.cryptoService.decryptFromBytes(buf, key);
             this.platformUtilsService.saveFile(this.win, decBuf, null, attachment.fileName);
         } catch (e) {
-            this.platformUtilsService.showToast('error', null, this.i18nService.t('errorOccurred'));
+            this.raiseError();
         }
 
         a.downloading = false;
@@ -172,7 +171,7 @@ export class AttachmentsComponent implements OnInit {
                 a.downloading = true;
                 const response = await fetch(new Request(attachment.url, { cache: 'no-store' }));
                 if (response.status !== 200) {
-                    this.platformUtilsService.showToast('error', null, this.i18nService.t('errorOccurred'));
+                    this.raiseError();
                     a.downloading = false;
                     return;
                 }
@@ -202,7 +201,7 @@ export class AttachmentsComponent implements OnInit {
                     this.platformUtilsService.showToast('success', null, this.i18nService.t('attachmentSaved'));
                     this.onReuploadedAttachment.emit();
                 } catch (e) {
-                    this.platformUtilsService.showToast('error', null, this.i18nService.t('errorOccurred'));
+                    this.raiseError();
                 }
 
                 a.downloading = false;
